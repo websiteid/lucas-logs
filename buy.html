@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buy</title>
+    <link rel="icon" href="logo.png" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- BASE SETUP --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        body {
+            background: #ffffff;
+            color: #2d3436;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* --- SIDEBAR & NAVIGATION --- */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 4px 0 40px rgba(0, 0, 0, 0.1);
+            padding: 100px 25px;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            transform: translateX(-100%);
+            opacity: 0;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+
+        .sidebar.active {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .sidebar a {
+            color: #111;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.2rem;
+            padding: 10px;
+            border-radius: 12px;
+            transition: background 0.3s ease, transform 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-family: inherit;
+        }
+
+        .sidebar a:hover {
+            background: rgba(0, 0, 0, 0.05);
+            transform: translateX(10px);
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.25);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            z-index: 90;
+        }
+
+        .overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .hamburger {
+            position: fixed;
+            top: 25px;
+            left: 25px;
+            width: 55px;
+            height: 55px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border-radius: 18px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            z-index: 101;
+        }
+
+        .hamburger div {
+            width: 32px;
+            height: 4px;
+            background: #111;
+            margin: 5px 0;
+            border-radius: 2px;
+            transition: transform 0.3s ease, background 0.3s ease;
+        }
+
+        .hamburger.active div:nth-child(1) {
+            transform: translateY(9px) rotate(45deg);
+        }
+
+        .hamburger.active div:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger.active div:nth-child(3) {
+            transform: translateY(-9px) rotate(-45deg);
+        }
+
+        /* --- HEADER LOGO --- */
+        .center-content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding-top: 60px;
+            padding-bottom: 20px;
+        }
+
+        .logo {
+            max-width: 180px;
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+        }
+
+        /* --- MAIN CONTENT --- */
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 20px 80px;
+            animation: fadeSlide 0.8s ease-out forwards;
+        }
+
+        @keyframes fadeSlide {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        .main h1 {
+    font-size: 2.5rem;
+    color: #111;
+    margin-bottom: 10px; /* Dikurangi agar h2 bisa lebih dekat */
+    font-weight: 700;
+}
+
+.main h2 {
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: inline-block;
+    
+    /* Mengatur posisi ke atas */
+    margin-top: -5px; 
+    
+    /* Animasi Mantul */
+    animation: bounce 2s infinite;
+}
+
+/* Definisi animasi */
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-15px); }
+    60% { transform: translateY(-7px); }
+}
+
+        .help-content {
+            width: 100%;
+            max-width: 1000px;
+            background: #fff;
+            padding: 40px;
+            border-radius: 28px;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.04);
+            border: 1px solid #f2f2f2;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        /* --- SECTION CARDS --- */
+        .section-card {
+            background: #fcfcfc;
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid #f0f0f0;
+            cursor: pointer; /* Ditambahkan agar user tahu card bisa diklik */
+        }
+
+        .section-card:hover {
+            border-color: #007aff;
+            background: #fff;
+            box-shadow: 0 10px 30px rgba(0, 122, 255, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .help-content h3 {
+            font-size: 1.3rem;
+            color: #007aff;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .help-content p {
+            line-height: 1.7;
+            color: #555;
+            margin-bottom: 15px;
+        }
+
+        .help-content ul {
+            padding-left: 20px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .help-content li {
+            margin-bottom: 8px;
+        }
+
+        /* --- BUTTONS --- */
+        .buttons {
+            grid-column: 1 / -1;
+            display: flex;
+            gap: 15px;
+            margin-top: 40px;
+            justify-content: center;
+            flex-wrap: wrap;
+            width: 100%;
+        }
+
+        .buttons button {
+            padding: 16px 32px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 16px;
+            cursor: pointer;
+            color: #fff;
+            font-weight: 600;
+            min-width: 180px;
+        }
+
+        #contactBtn { background: #007aff; }
+        #backBtn { background: #a2e603; color: #111; }
+
+        .buttons button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        /* --- FOOTER --- */
+        footer {
+            padding: 30px;
+            text-align: center;
+            color: #a1a1a6;
+            font-size: 0.9rem;
+            background: #fff;
+            border-top: 1px solid #f2f2f2;
+        }
+
+        /* --- MOBILE RESPONSIVE --- */
+        @media(max-width: 600px) {
+            .help-content { 
+                padding: 25px; 
+                grid-template-columns: 1fr;
+            }
+            .main h1 { font-size: 1.8rem; }
+            .buttons button { width: 100%; }
+            .logo { max-width: 130px; }
+            .sidebar { width: 80%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar" id="sidebar">
+        <a href="utama.html"><span>🏡</span> Home</a>
+        <a href="buy.html">💵 Beli VIP</a>
+        <a href="user.html"><span>👥</span> User</a>
+        <a href="admin.html"><span>👤</span> Admin</a>
+        <a href="help.html"><span>❓</span> Help</a>
+        <a href="support.html"><span>💬</span> Support</a>
+    </div>
+
+    <div class="overlay" id="overlay"></div>
+
+    <div class="hamburger" id="hamburger">
+        <div></div>
+        <div></div>
+        <div></div>
+    </div>
+
+    <div class="center-content">
+        <img src="logo.png" alt="Logo Website" class="logo">
+    </div>
+
+    <div class="main">
+        <h1>DAFTAR PRODUK VIP</h1>
+        <h2>TEKAN PRODUK YANG INGIN ANDA BELI!!!</h2>
+        <div class="help-content">
+            
+            <div class="section-card" onclick="window.location.href='buy-cek.html?produk=VIP+LOKAL&harga=2.000'">
+                <img src="produk1.png" alt="Produk 1" style="width: 100%; border-radius: 15px; margin-bottom: 15px; object-fit: cover;">
+                <h3>👑 VIP LOKAL</h3>
+                <p>Akses standar untuk menikmati layanan kami dengan harga terjangkau.</p>
+                <ul>
+                    <li><strong>Harga:</strong> Rp 2.000</li>
+                    <li><strong>Fitur:</strong> Akses 1 bulan, upload setiap hari.</li>
+                </ul>
+            </div>
+
+            <div class="section-card" onclick="window.location.href='buy-cek.html?produk=VIP+ASIA&harga=2.000'">
+                <img src="produk2.png" alt="Produk 2" style="width: 100%; border-radius: 15px; margin-bottom: 15px; object-fit: cover;">
+                <h3>👑 VIP ASIA</h3>
+                <p> Akses standar untuk menikmati layanan kami dengan harga terjangkau.</p>
+                <ul>
+                    <li><strong>Harga:</strong> Rp 2.000</li>
+                    <li><strong>Fitur:</strong> Akses 1 bulan, upload setiap hari.</li>
+                </ul>
+            </div>
+
+            <div class="section-card" onclick="window.location.href='buy-cek.html?produk=VIP+CINA&harga=2.000'">
+                <img src="produk3.png" alt="Produk 3" style="width: 100%; border-radius: 15px; margin-bottom: 15px; object-fit: cover;">
+                <h3>👑 VIP CINA</h3>
+                <p>Akses standar untuk menikmati layanan kami dengan harga terjangkau.</p>
+                <ul>
+                    <li><strong>Harga:</strong> Rp 2.000</li>
+                    <li><strong>Fitur:</strong> Akses 1 bulan, upload setiap hari.</li>
+                </ul>
+            </div>
+
+            <div class="section-card" onclick="window.location.href='buy-cek.html?produk=VIP+AMERIKA&harga=2.000'">
+                <img src="produk4.png" alt="Produk 4" style="width: 100%; border-radius: 15px; margin-bottom: 15px; object-fit: cover;">
+                <h3>👑 VIP AMERIKA</h3>
+                <p>Akses standar untuk menikmati layanan kami dengan harga terjangkau.</p>
+                <ul>
+                    <li><strong>Harga:</strong> Rp 2.000</li>
+                    <li><strong>Fitur:</strong> Akses 1 bulan, upload setiap hari.</li>
+                </ul>
+            </div>
+
+            <div class="section-card" onclick="window.location.href='buy-cek.html?produk=VIP+VGK&harga=3.000'">
+                <img src="produk5.png" alt="Produk 5" style="width: 100%; border-radius: 15px; margin-bottom: 15px; object-fit: cover;">
+                <h3>👑 VIP VGK</h3>
+                <p>Akses standar untuk menikmati layanan kami dengan harga terjangkau.</p>
+                <ul>
+                    <li><strong>Harga:</strong> Rp 3.000</li>
+                    <li><strong>Fitur:</strong> Akses 1 bulan, upload setiap hari.</li>
+                </ul>
+            </div>
+
+            <div class="section-card" onclick="window.location.href='buy-cek.html?produk=PAKET+LENGKAP+SEMUA+CHANNEL&harga=10.000'">
+                <img src="produk6.png" alt="Produk 3" style="width: 100%; border-radius: 15px; margin-bottom: 15px; object-fit: cover;">
+                <h3>👑 PAKET LENGKAPP SEMUA CHANNEL</h3>
+                <p>Nikmati pengalaman terbaik dengan semua fitur VIP terbuka sepenuhnya.</p>
+                <ul>
+                    <li><strong>Harga:</strong> Rp 10.000</li>
+                    <li><strong>Fitur:</strong> Semua fitur Premium + Akses Bot Eksklusif.</li>
+                </ul>
+            </div>
+
+            <div class="buttons">
+                <button id="contactBtn" onclick="window.location.href='index.html'">Back</button>
+              
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        &copy; 2026 @nipo. All rights reserved.
+    </footer>
+
+    <script>
+       const sidebar = document.getElementById('sidebar');
+    const hamburger = document.getElementById('hamburger');
+    const overlay = document.getElementById('overlay');
+
+    hamburger.addEventListener('click', () => {
+        sidebar.classList.toggle('active');
+        overlay.classList.toggle('active');
+    });
+
+    if (performance.getEntriesByType("navigation")[0].type === "reload") {
+        sessionStorage.setItem('last_page', window.location.href);
+        window.location.href = 'loading.html';
+    }
+    
+    overlay.addEventListener('click', () => {
+        sidebar.classList.remove('active');
+        overlay.classList.remove('active');
+    });
+    document.addEventListener('contextmenu', e => e.preventDefault());
+document.onkeydown = function(e) {
+    if (e.ctrlKey && (e.keyCode === 85 || e.keyCode === 73)) return false; 
+    if (e.keyCode === 123) return false;
+};
+    </script>
+</body>
+</html>

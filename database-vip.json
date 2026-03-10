@@ -1,0 +1,23 @@
+{
+  "posts": [
+    {
+      "title": "Video VIP 1",
+      "desc": "Deskripsi singkat Video VIP 1",
+      "category": "A",
+      "image": "thumb1.jpg",
+      "links": ["video1-server1.mp4", "video1-server2.mp4"]
+    },
+    {
+      "title": "Video VIP 2",
+      "desc": "Deskripsi singkat Video VIP 2",
+      "category": "B",
+      "image": "thumb2.jpg",
+      "links": ["video2-server1.mp4"]
+    }
+  ],
+  "tokens": {
+    "A": "TOKEN123A",
+    "B": "TOKEN456B",
+    "C": "TOKEN789C"
+  }
+}

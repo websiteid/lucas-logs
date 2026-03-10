@@ -1,0 +1,65 @@
+{
+  "posts": [
+    {
+      "id": 1,
+      "title": "Video Lokal v1",
+      "category": "A",
+      "image": "https://via.placeholder.com/320x180",
+      "links": [
+        "https://example.com/video1"
+      ],
+      "desc": "Video contoh lokal"
+    },
+    {
+      "id": 2,
+      "title": "Asia Collection",
+      "category": "B",
+      "image": "https://via.placeholder.com/320x180",
+      "links": [
+        "https://example.com/asia1",
+        "https://example.com/asia2"
+      ],
+      "desc": "Koleksi video asia"
+    },
+    {
+      "id": 3,
+      "title": "China Movie Pack",
+      "category": "C",
+      "image": "https://via.placeholder.com/320x180",
+      "links": [
+        "https://example.com/china1"
+      ],
+      "desc": "Film china pilihan"
+    },
+    {
+      "id": 4,
+      "title": "America Series",
+      "category": "D",
+      "image": "https://via.placeholder.com/320x180",
+      "links": [
+        "https://example.com/us1"
+      ],
+      "desc": "Series amerika terbaru"
+    },
+    {
+      "id": 5,
+      "title": "VGK Collection",
+      "category": "E",
+      "image": "https://via.placeholder.com/320x180",
+      "links": [
+        "https://example.com/vgk1"
+      ],
+      "desc": "Koleksi VGK"
+    },
+    {
+      "id": 6,
+      "title": "Yaoi Compilation",
+      "category": "F",
+      "image": "https://via.placeholder.com/320x180",
+      "links": [
+        "https://example.com/yaoi1"
+      ],
+      "desc": "Kompilasi yaoi"
+    }
+  ]
+}

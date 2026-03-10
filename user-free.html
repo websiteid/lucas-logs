@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User │ Free</title>
+    <link rel="icon" href="logo.png" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-light: #eff6ff;
+            --bg-body: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-dim: #64748b;
+            --border: #e2e8f0;
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.02);
+            --shadow-md: 0 10px 25px -5px rgba(0,0,0,0.05);
+            --radius-lg: 24px;
+            --radius-md: 16px;
+            --danger: #ef4444;
+        }
+
+        * {
+            margin: 0; padding: 0; box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            min-height: 100vh;
+            line-height: 1.6;
+            background-image: radial-gradient(at 0% 0%, rgba(37, 99, 235, 0.05) 0px, transparent 50%),
+                              radial-gradient(at 100% 100%, rgba(37, 99, 235, 0.03) 0px, transparent 50%);
+        }
+
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            gap: 15px;
+        }
+
+        .nav-left { display: flex; align-items: center; gap: 10px; }
+        .logo-section { display: flex; align-items: center; gap: 12px; }
+        .logo-section img { width: 35px; height: 35px; border-radius: 8px; }
+
+        .home-btn, .back-btn {
+            background: white; 
+            border: 1px solid var(--border);
+            padding: 10px; 
+            border-radius: 12px; 
+            cursor: pointer;
+            transition: 0.3s; 
+            display: flex; 
+            align-items: center;
+            text-decoration: none; 
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        .back-btn { display: none; padding: 10px 18px; font-size: 0.9rem; }
+        .home-btn:hover, .back-btn:hover { 
+            background: var(--primary-light); 
+            border-color: var(--primary); 
+            color: var(--primary);
+        }
+
+        .home-btn svg { width: 22px; height: 22px; stroke: var(--primary); fill: none; stroke-width: 2; }
+
+        h1, h2, h3, .menu-box span { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .header-nav { text-align: center; margin-bottom: 50px; }
+        #dashboardTitle {
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 800; letter-spacing: -0.04em; margin-bottom: 8px;
+        }
+
+        .menu-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+        }
+
+        .menu-box {
+            background: var(--card-bg); border: 1px solid var(--border);
+            padding: 35px 15px; border-radius: var(--radius-lg);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .menu-box:hover {
+            transform: translateY(-6px); border-color: var(--primary);
+            box-shadow: 0 15px 30px rgba(37, 99, 235, 0.08);
+        }
+
+        .icon-wrapper {
+            width: 55px; height: 55px; background: var(--primary-light);
+            border-radius: 16px; display: flex; align-items: center; justify-content: center;
+            margin-bottom: 15px; transition: 0.3s;
+        }
+
+        .menu-box:hover .icon-wrapper { background: var(--primary); transform: scale(1.1); }
+        .menu-box:hover .icon-wrapper svg { stroke: #ffffff; }
+        .icon-wrapper svg { width: 26px; height: 26px; stroke: var(--primary); stroke-width: 2; fill: none; }
+        .menu-box span { font-weight: 700; font-size: 1rem; }
+
+        .controls { display: none; margin-bottom: 30px; justify-content: center; }
+        .search-container { width: 100%; max-width: 500px; }
+        .search-container input {
+            width: 100%; padding: 14px 24px; border-radius: 100px;
+            border: 1px solid var(--border); outline: none; transition: 0.3s;
+            box-shadow: var(--shadow-sm);
+        }
+        .search-container input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
+
+        .post-list {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px;
+        }
+
+        .post-item {
+            background: var(--card-bg); border-radius: var(--radius-md);
+            overflow: hidden; border: 1px solid var(--border);
+            transition: 0.3s; cursor: pointer;
+        }
+
+        .post-item:hover { transform: translateY(-5px); box-shadow: var(--shadow-md); }
+        .post-thumbnail { width: 100%; aspect-ratio: 16/10; object-fit: cover; }
+        .post-info { padding: 15px; }
+        .play-tag { color: var(--primary); font-size: 10px; font-weight: 800; text-transform: uppercase; margin-bottom: 4px; display: block; }
+        .post-title { font-weight: 700; font-size: 1rem; line-height: 1.4; }
+
+        .modal {
+            position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 5000; padding: 20px;
+        }
+        .modal-content {
+            background: #fff; width: 100%; max-width: 450px; padding: 30px;
+            border-radius: 28px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.3);
+        }
+
+        .link-card {
+            background: var(--bg-body); border: 1px solid var(--border);
+            padding: 14px 18px; border-radius: 14px; margin-top: 10px;
+            cursor: pointer; transition: 0.2s; font-weight: 600;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .link-card:hover { background: var(--primary); color: #fff; }
+
+        .close-modal-btn {
+            width: 100%; margin-top: 25px; padding: 14px; border: none; 
+            background: var(--danger); border-radius: 12px; cursor: pointer; 
+            font-weight: 700; color: white; transition: 0.3s;
+        }
+
+        .preview-overlay {
+            position: fixed; inset: 0; background: #000; z-index: 9999;
+            display: none; flex-direction: column;
+        }
+        .preview-header { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; background: #111; color: #fff; }
+        .preview-header button { 
+            background: var(--danger); color: #fff; border: none; 
+            padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; 
+        }
+        
+        iframe { flex: 1; border: none; }
+        footer { text-align: center; padding: 40px 0; color: var(--text-dim); font-size: 0.8rem; }
+
+        @media (max-width: 768px) {
+            .menu-grid { grid-template-columns: repeat(2, 1fr); }
+            #dashboardTitle { font-size: 2rem; }
+        }
+
+        .fade-in { animation: fadeIn 0.4s ease forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+<div class="preview-overlay" id="previewOverlay">
+    <div class="preview-header">
+        <span id="playingTitle">Now Playing</span>
+        <button onclick="closePreview()">Close Video</button>
+    </div>
+    <iframe id="previewFrame" src="" allowfullscreen></iframe>
+</div>
+
+<div class="dashboard-container">
+    <div class="top-bar">
+        <div class="nav-left">
+            <a href="javascript:void(0)" class="home-btn" id="homeLink" onclick="handleBackAction()">
+                <svg viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"></path></svg>
+            </a>
+        </div>
+        <div class="logo-section">
+            <img src="logo.png" alt="Logo" onerror="this.style.display='none'">
+            <span style="font-weight: 800; font-size: 1.1rem; letter-spacing: -1px;">LUCA'S VIP</span>
+        </div>
+    </div>
+
+
+    <div class="header-nav">
+        <h1 id="dashboardTitle">LUCA'S</h1>
+        <p id="subTitle">Pilih kategori untuk melihat koleksi terbaru</p>
+    </div>
+
+    <div class="controls" id="controlsArea">
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Cari judul video..." onkeyup="searchPosts()">
+        </div>
+    </div>
+
+    <div class="menu-grid" id="categoryBoxes">
+        <div class="menu-box" onclick="filterPosts('A')">
+           <div class="icon-wrapper"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8"></polygon></svg></div>
+            <span>LOKAL</span>
+        </div>
+        <div class="menu-box" onclick="filterPosts('B')">
+            <div class="icon-wrapper"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8"></polygon></svg></div>
+            <span>ASIA</span>
+        </div>
+        <div class="menu-box" onclick="filterPosts('C')">
+            <div class="icon-wrapper"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8"></polygon></svg></div>
+            <span>CHINA</span>
+        </div>
+        <div class="menu-box" onclick="filterPosts('D')">
+            <div class="icon-wrapper"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8"></polygon></svg></div>
+            <span>AMERIKA</span>
+        </div>
+        <div class="menu-box" onclick="filterPosts('E')">
+            <div class="icon-wrapper"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8"></polygon></svg></div>
+            <span>VGK</span>
+        </div>
+        <div class="menu-box" onclick="filterPosts('F')">
+            <div class="icon-wrapper"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8"></polygon></svg></div>
+            <span>YAOI</span>
+        </div>
+    </div>
+
+    <div class="post-list" id="postList"></div>
+</div>
+
+<div class="modal" id="postModal">
+    <div class="modal-content" id="modalContent">
+        <div id="modalBody"></div>
+        <button onclick="closeModal()" class="close-modal-btn">CLOSE</button>
+    </div>
+</div>
+
+<footer>&copy; 2026 @nipo. All rights reserved.</footer>
+
+<script>
+    let posts = [];
+const JSON_URL = "https://raw.githubusercontent.com/websiteid/lucas-logs/main/database-free.json";
+    let currentCategory = null;
+    let lastDataHash = localStorage.getItem('user_home_db'); // Untuk deteksi perubahan otomatis
+
+    async function loadPosts(){
+    try{
+        const res = await fetch(JSON_URL);
+        const data = await res.json();
+        posts = data.posts.reverse();
+        console.log("Posts loaded:", posts);
+    }catch(err){
+        console.error("Failed load posts", err);
+    }
+}
+    
+    function startAutoSync() {
+        setInterval(() => {
+            const freshData = localStorage.getItem('user_home_db');
+            if (freshData !== lastDataHash) {
+                console.log("Data baru terdeteksi, memperbarui tampilan...");
+                lastDataHash = freshData;
+                posts = (JSON.parse(freshData) || []).reverse();
+                
+                // Jika sedang di dalam kategori, update list post tanpa reload
+                if (currentCategory) {
+                    const filtered = posts.filter(p => p.category.toUpperCase() === currentCategory.toUpperCase());
+                    renderPosts(filtered);
+                }
+            }
+        }, 3000); // Cek setiap 3 detik
+    }
+
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'user_home_db') {
+            lastDataHash = e.newValue;
+            posts = (JSON.parse(e.newValue) || []).reverse();
+            if (currentCategory) {
+                renderPosts(posts.filter(p => p.category.toUpperCase() === currentCategory.toUpperCase()));
+            }
+        }
+    });
+
+    function filterPosts(category) {
+        currentCategory = category;
+        gsap.to("#categoryBoxes, #subTitle", { duration: 0.3, opacity: 0, y: -20, display: 'none' });
+        setTimeout(() => {
+            document.getElementById('controlsArea').style.display = 'flex';
+            document.getElementById('topBackBtn').style.display = 'flex';
+            document.getElementById('dashboardTitle').textContent = category.toUpperCase();
+            renderPosts(posts.filter(p => p.category.toUpperCase() === category.toUpperCase()));
+            gsap.fromTo("#controlsArea, #postList, #topBackBtn", { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.4 });
+        }, 300);
+    }
+
+     function backToCategories() {
+        currentCategory = null;
+        gsap.to("#postList, #controlsArea, #tokenGate", { duration: 0.3, opacity: 0, y: 10, onComplete: () => {
+            document.getElementById('postList').innerHTML = '';
+            document.getElementById('controlsArea').style.display = 'none';
+            document.getElementById('tokenGate').style.display = 'none';
+            document.getElementById('dashboardTitle').textContent = "VIP ACCESS";
+            document.getElementById('categoryBoxes').style.display = 'grid';
+            document.getElementById('subTitle').style.display = 'block';
+            gsap.fromTo("#categoryBoxes, #subTitle", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.4 });
+        }});
+    }
+
+
+    function renderPosts(array) {
+        const list = document.getElementById('postList');
+        list.innerHTML = array.length ? '' : '<div style="grid-column:1/-1; text-align:center; padding:80px; color:var(--text-dim)">Belum ada video.</div>';
+        
+        array.forEach((post, index) => {
+            const item = document.createElement('div');
+            item.className = 'post-item fade-in';
+            item.style.animationDelay = `${index * 0.05}s`;
+            item.innerHTML = `
+                <img src="${post.image || ''}" class="post-thumbnail">
+                <div class="post-info">
+                    <span class="play-tag">Premium Quality</span>
+                    <span class="post-title">${post.title}</span>
+                </div>`;
+            item.onclick = () => showDetail(post);
+            list.appendChild(item);
+        });
+    }
+
+    function showDetail(post) {
+        let linksHtml = (post.links || []).map((l, i) => `<div class="link-card" onclick="openPreview('${l}', '${post.title}')">Server ${i+1} <span>▶</span></div>`).join('');
+        document.getElementById('modalBody').innerHTML = `<h2 style="margin-bottom:8px;">${post.title}</h2><p style="margin-bottom:20px; color:var(--text-dim);">${post.desc || ''}</p>${linksHtml}`;
+        document.getElementById('postModal').style.display = 'flex';
+        gsap.fromTo("#modalContent", { scale: 0.9, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.3 });
+    }
+
+    function closeModal() {
+        gsap.to("#modalContent", { scale: 0.9, opacity: 0, duration: 0.2, onComplete: () => document.getElementById('postModal').style.display = 'none' });
+    }
+
+    function openPreview(url, title) {
+        document.getElementById('playingTitle').textContent = title;
+        document.getElementById('previewFrame').src = url;
+        document.getElementById('previewOverlay').style.display = 'flex';
+    }
+
+    function closePreview() {
+        document.getElementById('previewOverlay').style.display = 'none';
+        document.getElementById('previewFrame').src = "";
+    }
+
+    function searchPosts() {
+        const val = document.getElementById('searchInput').value.toLowerCase();
+        renderPosts(posts.filter(p => p.category.toUpperCase() === currentCategory.toUpperCase() && p.title.toLowerCase().includes(val)));
+    }
+
+    window.onload = async () => {
+    await loadPosts();
+};
+
+    if (performance.getEntriesByType("navigation")[0].type === "reload") {
+        sessionStorage.setItem('last_page', window.location.href);
+        window.location.href = 'loading.html';
+    }
+    // Ganti fungsi backToCategories lama dengan ini
+function handleBackAction() {
+    // Jika sedang di dalam kategori, kembali ke menu utama
+    if (currentCategory) {
+        currentCategory = null;
+        
+        // Animasi keluar untuk list video dan kontrol pencarian
+        gsap.to("#postList, #controlsArea", { 
+            duration: 0.3, 
+            opacity: 0, 
+            y: 10, 
+            onComplete: () => {
+                document.getElementById('postList').innerHTML = '';
+                document.getElementById('controlsArea').style.display = 'none';
+                
+                // Kembalikan judul dan menu utama
+                document.getElementById('dashboardTitle').textContent = "LUCA'S";
+                document.getElementById('categoryBoxes').style.display = 'grid';
+                document.getElementById('subTitle').style.display = 'block';
+                
+                // Animasi masuk untuk menu utama
+                gsap.fromTo("#categoryBoxes, #subTitle", 
+                    { opacity: 0, y: 20 }, 
+                    { opacity: 1, y: 0, duration: 0.4 }
+                );
+            }
+        });
+    } else {
+        // Jika sudah di menu utama, bisa diarahkan ke halaman lain (misal index.html atau loading)
+        window.location.href = 'user.html';
+    }
+}
+
+// Pastikan fungsi filterPosts juga diperbaiki agar tidak error memanggil ID yang tidak ada
+function filterPosts(category) {
+    currentCategory = category;
+    gsap.to("#categoryBoxes, #subTitle", { duration: 0.3, opacity: 0, y: -20, display: 'none' });
+    
+    setTimeout(() => {
+        document.getElementById('controlsArea').style.display = 'flex';
+        // Hapus baris yang memanggil topBackBtn jika tidak ada di HTML
+        document.getElementById('dashboardTitle').textContent = category.toUpperCase();
+        
+        const filtered = posts.filter(p => p.category.toUpperCase() === category.toUpperCase());
+        renderPosts(filtered);
+        
+        gsap.fromTo("#controlsArea, #postList", { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.4 });
+    }, 300);
+}
+
+    (function() {
+        document.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                if (this.id === 'homeLink') return; 
+                const target = this.getAttribute('href');
+                if (target && target !== '#' && !target.startsWith('http')) {
+                    e.preventDefault();
+                    window.location.href = 'loading.html?target=' + encodeURIComponent(target);
+                }
+            });
+        });
+    })();
+</script>
+</body>
+
+</html>
+

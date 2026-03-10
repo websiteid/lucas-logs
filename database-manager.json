@@ -1,0 +1,8 @@
+{
+  "VIP LOKAL": "https://example.com/vip-lokal",
+  "VIP ASIA": "https://example.com/vip-asia",
+  "VIP CINA": "https://example.com/vip-cina",
+  "VIP AMERIKA": "https://example.com/vip-amerika",
+  "VIP VGK": "https://example.com/vip-vgk",
+  "PAKET LENGKAP": "https://example.com/vip-lokal,https://example.com/vip-asia,https://example.com/vip-cina,https://example.com/vip-amerika,https://example.com/vip-vgk"
+}

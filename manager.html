@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Pro Manager | Link Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root { --primary: #6366f1; --bg: #0f172a; --card: rgba(30, 41, 59, 0.7); }
+body { font-family: 'Inter', sans-serif; background: #020617; color: white; padding: 40px 20px; display: flex; justify-content: center; }
+.wrapper { width: 100%; max-width: 800px; }
+h2 { font-size: 1.8rem; margin-bottom: 2rem; background: linear-gradient(to right, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+.card { background: var(--card); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); padding: 20px; border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
+table { width: 100%; border-collapse: separate; border-spacing: 0 10px; }
+th { color: #94a3b8; font-weight: 600; text-align: left; padding: 10px; }
+td { padding: 15px; background: rgba(255,255,255,0.03); }
+td:first-child { border-radius: 12px 0 0 12px; font-weight: 600; }
+td:last-child { border-radius: 0 12px 12px 0; text-align: center; }
+
+input { background: #1e293b; border: 1px solid #334155; color: white; padding: 8px 12px; border-radius: 8px; width: 90%; }
+.btn { cursor: pointer; padding: 8px 16px; border-radius: 8px; border: none; font-weight: 600; transition: 0.3s; }
+.btn-edit { background: #334155; color: white; }
+.btn-edit:hover { background: #475569; }
+.btn-save { background: #6366f1; color: white; }
+.btn-save:hover { background: #4f46e5; }
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+<h2>🚀 Link Manager Pro</h2>
+<div class="card">
+<table>
+<thead><tr><th>Produk</th><th>URL Akses</th><th>Aksi</th></tr></thead>
+<tbody id="tableBody"></tbody>
+</table>
+</div>
+</div>
+
+<script>
+const produkList = ["VIP LOKAL", "VIP ASIA", "VIP CINA", "VIP AMERIKA", "VIP VGK", "PAKET LENGKAP"];
+let database = {};
+
+// Load database-manager.json
+async function loadDatabase() {
+    try {
+        const res = await fetch('database-manager.json');
+        database = await res.json();
+        renderTable();
+    } catch (err) {
+        console.error("Gagal load database:", err);
+        database = {}; // fallback
+    }
+}
+
+// Render table dari database
+function renderTable() {
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = '';
+    produkList.forEach(p => {
+        const link = database[p] || "";
+        let displayContent = p === "PAKET LENGKAP" 
+            ? (link ? link.split(',').map((l,i)=>`<div>${i+1}. ${l}</div>`).join('') : "Belum diatur")
+            : (link || "Belum diatur");
+        tbody.innerHTML += `<tr>
+            <td>${p}</td>
+            <td id="cell_${p}">${displayContent}</td>
+            <td><button class="btn btn-edit" onclick="edit('${p}')">✏️ Edit</button></td>
+        </tr>`;
+    });
+}
+
+// Edit link
+function edit(p) {
+    const cell = document.getElementById('cell_' + p);
+    const current = database[p] || "";
+    const placeholder = p === "PAKET LENGKAP" ? "Link1,Link2,Link3,Link4,Link5" : "https://...";
+    cell.innerHTML = `<input type="text" id="inp_${p}" value="${current}" placeholder="${placeholder}" style="width: 95%;">`;
+    const btnCell = cell.nextElementSibling;
+    btnCell.innerHTML = `<button class="btn btn-save" onclick="save('${p}')">💾 Simpan</button>`;
+}
+
+// Simpan link ke database (demo: simpan ke variable & console.log)
+function save(p) {
+    let val = document.getElementById('inp_' + p).value;
+    if (p === "PAKET LENGKAP") val = val.replace(/\s/g,''); // hapus spasi
+    database[p] = val;
+
+    // Demo: tampilkan di console, nanti bisa diupdate via server/API
+    console.log("Database baru:", database);
+
+    renderTable();
+}
+
+// Inisialisasi
+loadDatabase();
+</script>
+</body>
+</html>

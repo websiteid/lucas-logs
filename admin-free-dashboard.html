@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard │ free</title>
+    <link rel="icon" href="logo.png" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --primary-light: #eef2ff;
+            --bg-body: #f8fafc;
+            --bg-card: #ffffff;
+            --text-main: #1e293b;
+            --text-dim: #64748b;
+            --border: #e2e8f0;
+            --danger: #ef4444;
+            --success: #10b981;
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+        }
+
+        body {
+            display: none;
+            margin: 0;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+            padding: 2rem;
+            overflow-x: hidden;
+        }
+
+        /* --- Animations --- */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes modalPop {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        /* --- Toast Notification --- */
+        #toast {
+            position: fixed; top: 25px; right: 25px; padding: 16px 28px;
+            background: white; color: var(--text-main); border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1); display: flex;
+            align-items: center; gap: 12px; z-index: 10001;
+            transform: translateX(150%); transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border-left: 6px solid var(--primary); font-weight: 700;
+        }
+
+        #toast.show { transform: translateX(0); }
+
+        /* --- Modal Logout --- */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(8px); display: none; justify-content: center;
+            align-items: center; z-index: 10000;
+        }
+
+        .modal-card {
+            background: white; padding: 2.5rem; border-radius: 28px; width: 90%;
+            max-width: 400px; text-align: center; animation: modalPop 0.3s ease-out;
+        }
+
+        .modal-btns { display: flex; gap: 15px; margin-top: 2rem; }
+
+        .btn-confirm, .btn-cancel {
+            flex: 1; padding: 14px; border-radius: 14px; font-weight: 700; cursor: pointer; border: none;
+        }
+
+        .btn-confirm { background: var(--danger); color: white; }
+        .btn-cancel { background: var(--primary-light); color: var(--text-main); }
+
+        /* --- Navigation & Stats --- */
+        .top-nav { display: flex; justify-content: flex-end; margin-bottom: 2rem; }
+
+        .btn-logout {
+            display: flex; align-items: center; gap: 8px; padding: 12px 24px;
+            background: white; border: 1.5px solid var(--border); border-radius: 14px;
+            color: var(--danger); font-weight: 700; cursor: pointer; transition: 0.3s;
+        }
+
+        .btn-logout:hover { background: var(--danger); color: white; }
+
+        .header-stats {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem; margin-bottom: 3rem; animation: fadeIn 0.5s ease-out;
+        }
+
+        .stat-card {
+            background: var(--bg-card); padding: 1.8rem; border-radius: 24px;
+            border: 1px solid var(--border); display: flex; align-items: center; gap: 1.5rem;
+            box-shadow: var(--shadow);
+        }
+
+        .stat-icon {
+            width: 56px; height: 56px; background: var(--primary-light);
+            color: var(--primary); border-radius: 16px; display: grid; place-items: center;
+        }
+
+        /* --- Admin Layout Grid --- */
+        .admin-grid { display: grid; grid-template-columns: 380px 1fr; gap: 2.5rem; }
+
+        .side-panel {
+            background: var(--bg-card); padding: 2.5rem; border-radius: 32px;
+            border: 1px solid var(--border); height: fit-content; position: sticky; top: 2rem;
+            box-shadow: var(--shadow); animation: fadeIn 0.6s ease-out;
+        }
+
+        /* --- Image Upload Area --- */
+        .upload-area {
+            width: 100%; height: 160px; background: #f1f5f9; border: 2px dashed var(--border);
+            border-radius: 16px; margin-bottom: 1.5rem; overflow: hidden; position: relative;
+            cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+
+        .upload-area:hover { border-color: var(--primary); background: var(--primary-light); }
+        .upload-area img { width: 100%; height: 100%; object-fit: cover; position: absolute; z-index: 1; display: none; }
+        .upload-area span { color: var(--text-dim); font-size: 0.8rem; font-weight: 700; position: relative; z-index: 0; text-align: center; padding: 10px; }
+
+        /* --- Form Elements --- */
+        .form-group { margin-bottom: 1.5rem; }
+        label { display: block; margin-bottom: 0.7rem; font-size: 0.85rem; font-weight: 700; color: var(--text-dim); }
+        input, select, textarea {
+            width: 100%; padding: 15px; background: #f1f5f9; border: 1.5px solid transparent;
+            border-radius: 14px; font-size: 0.95rem; font-family: inherit; transition: 0.3s; box-sizing: border-box;
+        }
+        input:focus, textarea:focus { background: white; border-color: var(--primary); outline: none; box-shadow: 0 0 0 4px var(--primary-light); }
+
+        .btn-submit {
+            width: 100%; padding: 18px; background: var(--primary); border: none;
+            border-radius: 16px; color: white; font-weight: 800; cursor: pointer; transition: 0.3s;
+        }
+        .btn-submit:hover { background: var(--primary-hover); transform: translateY(-2px); }
+
+        /* --- Main Content Area --- */
+        .search-wrapper { margin-bottom: 2rem; }
+        .search-wrapper input {
+            width: 100%; padding: 18px 24px; background: white; border: 2px solid var(--border);
+            border-radius: 20px; font-size: 1rem; font-weight: 500; outline: none;
+        }
+
+        .cat-pills { display: flex; gap: 0.8rem; overflow-x: auto; padding-bottom: 15px; margin-bottom: 1.5rem; scrollbar-width: none; }
+        .cat-pills::-webkit-scrollbar { display: none; }
+        
+        .pill {
+            padding: 12px 28px; background: white; border: 1.5px solid var(--border);
+            border-radius: 50px; cursor: pointer; font-weight: 700; color: var(--text-dim); white-space: nowrap; transition: 0.3s;
+        }
+        .pill.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 8px 15px rgba(79, 70, 229, 0.3); }
+
+        /* --- Post Card --- */
+        .post-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; }
+        .post-card {
+            background: white; border-radius: 24px; border: 1px solid var(--border);
+            overflow: hidden; display: flex; flex-direction: column; transition: 0.3s;
+        }
+        .post-card:hover { transform: translateY(-8px); box-shadow: 0 20px 30px rgba(0, 0, 0, 0.05); }
+        .card-thumb { width: 100%; height: 180px; object-fit: cover; background: #eee; }
+        .card-body { padding: 1.5rem; display: flex; flex-direction: column; flex-grow: 1; }
+        .card-body h3 { margin: 10px 0; font-size: 1.15rem; line-height: 1.4; }
+        .link-badge {
+            display: inline-block; padding: 6px 12px; background: var(--primary-light);
+            color: var(--primary); border-radius: 8px; text-decoration: none; font-size: 0.75rem; font-weight: 700; margin: 2px;
+        }
+
+        /* --- Responsive --- */
+        @media (max-width: 1100px) {
+            .admin-grid { grid-template-columns: 1fr; }
+            .side-panel { position: static; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="toast">
+        <i data-lucide="check-circle" size="22"></i>
+        <span id="toastMsg">Action Successful</span>
+    </div>
+
+    <div class="modal-overlay" id="logoutModal">
+        <div class="modal-card">
+            <div style="background: #fef2f2; width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; margin: 0 auto 1.5rem;">
+                <i data-lucide="log-out" color="#ef4444" size="32"></i>
+            </div>
+            <h2>Konfirmasi Keluar</h2>
+            <p style="color: var(--text-dim);">Apakah Anda yakin ingin mengakhiri sesi manajemen admin?</p>
+            <div class="modal-btns">
+                <button class="btn-cancel" onclick="closeLogoutModal()">Batal</button>
+                <button class="btn-confirm" onclick="confirmLogout()">Keluar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="top-nav">
+        <button class="btn-logout" onclick="openLogoutModal()">
+            <i data-lucide="log-out" size="18"></i> Logout
+        </button>
+    </div>
+
+    <header class="header-stats">
+        <div class="stat-card">
+            <div class="stat-icon"><i data-lucide="files"></i></div>
+            <div class="stat-info">
+                <h4>Total Postingan</h4>
+                <p id="totalPost">0</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon"><i data-lucide="layers"></i></div>
+            <div class="stat-info">
+                <h4>Kelas Aktif</h4>
+                <p id="activeCat">A</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="color:var(--success); background:#ecfdf5">
+                <i data-lucide="shield-check"></i>
+            </div>
+            <div class="stat-info">
+                <h4>Status Sistem</h4>
+                <p>SECURE</p>
+            </div>
+        </div>
+    </header>
+
+    <div class="admin-grid">
+        <aside class="side-panel">
+            <h2 id="formTitle" style="color:var(--primary); margin-bottom:2rem; font-weight:800;">Buat Postingan Free</h2>
+            <form id="postForm">
+                <input type="hidden" id="editId">
+
+                <label>Foto Thumbnail</label>
+                <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                    <span id="uploadHint">
+                        <i data-lucide="image" style="margin-bottom: 8px;"></i><br>Klik untuk Upload Foto
+                    </span>
+                    <img id="previewImg" src="">
+                </div>
+                <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="previewFile(this)">
+
+                <div class="form-group">
+                    <label>Judul Konten</label>
+                    <input type="text" id="title" placeholder="Contoh: Video Lokal v1" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Klasifikasi Kelas</label>
+                    <select id="category">
+                        <option value="A">LOKAL A</option>
+                        <option value="B">ASIA B</option>
+                        <option value="C">CHINA C</option>
+                        <option value="D">AMERIKA D</option>
+                        <option value="E">VGK E</option>
+                        <option value="F">YAOI F</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Tautan Link</label>
+                    <div id="linkInputs">
+                        <input type="url" class="link-field" placeholder="https://..." required>
+                    </div>
+                    <button type="button" onclick="addLinkField()" style="background:none; border:none; color:var(--primary); font-weight:800; cursor:pointer; font-size:0.85rem; margin-top:12px; display:flex; align-items:center; gap:6px">
+                        <i data-lucide="plus-circle" size="14"></i> Tambah Link Baru
+                    </button>
+                </div>
+
+                <div class="form-group">
+                    <label>Deskripsi Singkat</label>
+                    <textarea id="desc" rows="3" placeholder="Jelaskan konten Anda..."></textarea>
+                </div>
+
+                <button type="submit" id="submitBtn" class="btn-submit">PUBLIKASIKAN SEKARANG</button>
+            </form>
+        </aside>
+
+        <main>
+            <div class="search-wrapper">
+                <input type="text" id="searchInput" placeholder="Cari berdasarkan judul...">
+            </div>
+
+            <div class="cat-pills">
+                <div class="pill active" onclick="setCat('A', this)">LOKAL</div>
+                <div class="pill" onclick="setCat('B', this)">ASIA</div>
+                <div class="pill" onclick="setCat('C', this)">CHINA</div>
+                <div class="pill" onclick="setCat('D', this)">AMERIKA</div>
+                <div class="pill" onclick="setCat('E', this)">VGK</div>
+                <div class="pill" onclick="setCat('F', this)">YAOI</div>
+            </div>
+
+            <div class="post-grid" id="postDisplay"></div>
+        </main>
+    </div>
+
+    <script>
+        let posts = [];
+        const JSON_URL = "https://raw.githubusercontent.com/websiteid/lucas-logs/main/database-free.json";
+        let currentCat = 'A';
+        let isEditing = false;
+        let base64Image = "";
+
+        async function loadPosts(){
+  try{
+    const res = await fetch(JSON_URL);
+    const data = await res.json();
+    posts = data.posts;
+    render();
+  }catch(err){
+    console.log("Error load JSON",err);
+  }
+}
+        window.onload = () => {
+    if (localStorage.getItem('isLoggedIn') !== 'true') {
+        window.location.href = 'admin-free-dashboard.html';
+    } else {
+        document.body.style.display = 'block';
+        loadPosts();
+        lucide.createIcons();
+    }
+};
+
+        function showToast(msg, type = 'success') {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMsg').innerText = msg;
+            toast.style.borderLeftColor = type === 'danger' ? 'var(--danger)' : 'var(--primary)';
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        function openLogoutModal() { document.getElementById('logoutModal').style.display = 'flex'; }
+        function closeLogoutModal() { document.getElementById('logoutModal').style.display = 'none'; }
+        
+        function confirmLogout() {
+            localStorage.removeItem('isLoggedIn');
+            window.location.href = 'admin-free.html';
+        }
+
+        function previewFile(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    base64Image = e.target.result;
+                    const img = document.getElementById('previewImg');
+                    img.src = e.target.result;
+                    img.style.display = 'block';
+                    document.getElementById('uploadHint').style.opacity = '0';
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function addLinkField(val = "") {
+            const div = document.createElement('div');
+            div.style = "display:flex; gap:10px; margin-top:10px;";
+            div.innerHTML = `
+                <input type="url" class="link-field" value="${val}" style="flex:1" placeholder="https://..."> 
+                <button type="button" onclick="this.parentElement.remove()" style="color:var(--danger); border:none; background:none; cursor:pointer; font-weight:bold; font-size:1.2rem">×</button>
+            `;
+            document.getElementById('linkInputs').appendChild(div);
+        }
+
+        document.getElementById('postForm').onsubmit = (e) => {
+            e.preventDefault();
+            const links = Array.from(document.querySelectorAll('.link-field'))
+                               .map(i => i.value.trim())
+                               .filter(v => v);
+
+            const data = {
+                id: isEditing ? parseInt(document.getElementById('editId').value) : Date.now(),
+                title: document.getElementById('title').value.trim(),
+                category: document.getElementById('category').value,
+                image: base64Image,
+                links: links,
+                desc: document.getElementById('desc').value.trim()
+            };
+
+            if (isEditing) {
+                posts = posts.map(p => p.id === data.id ? data : p);
+                showToast("Postingan diperbarui!");
+            } else {
+                posts.push(data);
+                showToast("Berhasil dipublikasikan!");
+            }
+
+            localStorage.setItem('user_home_db', JSON.stringify(posts));
+            resetForm();
+            render();
+        };
+
+        function resetForm() {
+            document.getElementById('postForm').reset();
+            document.getElementById('linkInputs').innerHTML = '<input type="url" class="link-field" placeholder="https://..." required>';
+            document.getElementById('previewImg').style.display = 'none';
+            document.getElementById('uploadHint').style.opacity = '1';
+            base64Image = ""; 
+            isEditing = false;
+            document.getElementById('submitBtn').innerText = "PUBLIKASIKAN SEKARANG";
+            document.getElementById('formTitle').innerText = "Buat Postingan";
+        }
+
+        function render(query = "") {
+            const display = document.getElementById('postDisplay');
+            display.innerHTML = "";
+            
+            const filtered = posts.filter(p => 
+                p.category === currentCat && 
+                p.title.toLowerCase().includes(query.toLowerCase())
+            );
+
+            filtered.forEach(p => {
+                const img = p.image || 'https://via.placeholder.com/320x180?text=No+Image';
+                const card = `
+                    <div class="post-card">
+                        <img src="${img}" class="card-thumb" alt="thumbnail">
+                        <div class="card-body">
+                            <span style="color:var(--primary); font-size:0.7rem; font-weight:800;">CLASS ${p.category}</span>
+                            <h3>${p.title}</h3>
+                            <div style="flex-grow:1">
+                                ${p.links.map((l, i) => `<span class="link-badge">Link ${i + 1}</span>`).join('')}
+                            </div>
+                            <div style="margin-top:20px; display:flex; gap:15px; border-top:1px solid var(--border); padding-top:15px">
+                                <button onclick="editPost(${p.id})" style="border:none; background:none; color:var(--primary); cursor:pointer; font-weight:700; display:flex; align-items:center; gap:5px">
+                                    <i data-lucide="edit-3" size="14"></i> Edit
+                                </button>
+                                <button onclick="deletePost(${p.id})" style="border:none; background:none; color:var(--danger); cursor:pointer; font-weight:700; display:flex; align-items:center; gap:5px">
+                                    <i data-lucide="trash-2" size="14"></i> Hapus
+                                </button>
+                            </div>
+                        </div>
+                    </div>`;
+                display.insertAdjacentHTML('beforeend', card);
+            });
+
+            document.getElementById('totalPost').innerText = posts.length;
+            lucide.createIcons();
+        }
+
+        function editPost(id) {
+            const p = posts.find(x => x.id === id);
+            if (!p) return;
+
+            document.getElementById('title').value = p.title;
+            document.getElementById('category').value = p.category;
+            document.getElementById('desc').value = p.desc;
+            document.getElementById('editId').value = p.id;
+            
+            const linkIn = document.getElementById('linkInputs');
+            linkIn.innerHTML = "";
+            p.links.forEach((l, i) => {
+                if (i === 0) {
+                    linkIn.innerHTML = `<input type="url" class="link-field" value="${l}" required>`;
+                } else {
+                    addLinkField(l);
+                }
+            });
+
+            if (p.image) {
+                base64Image = p.image;
+                const img = document.getElementById('previewImg');
+                img.src = p.image;
+                img.style.display = 'block';
+                document.getElementById('uploadHint').style.opacity = '0';
+            }
+
+            isEditing = true;
+            document.getElementById('submitBtn').innerText = "SIMPAN PERUBAHAN";
+            document.getElementById('formTitle').innerText = "Edit Postingan";
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function deletePost(id) {
+            if (confirm("Hapus postingan ini secara permanen?")) {
+                posts = posts.filter(p => p.id !== id);
+                localStorage.setItem('user_home_db', JSON.stringify(posts));
+                showToast("Berhasil dihapus", "danger");
+                render();
+            }
+        }
+
+        function setCat(c, el) {
+            currentCat = c;
+            document.getElementById('activeCat').innerText = c;
+            document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+            el.classList.add('active');
+            render();
+        }
+
+        // --- Listeners ---
+        document.getElementById('searchInput').oninput = (e) => render(e.target.value);
+
+        // Security: Anti F12 & Right Click
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        document.onkeydown = function (e) {
+            if (e.ctrlKey && (e.keyCode === 85 || e.keyCode === 73)) return false;
+            if (e.keyCode === 123) return false;
+        };
+    </script>
+</body>
+
+</html>
+
+

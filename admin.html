@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin</title>
+    <link rel="icon" href="logo.png" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        body {
+            background: linear-gradient(160deg, #f5f5f7, #e0e0e5);
+            color: #111;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            overflow-x: hidden;
+            background-image: url('background.jpg'); /* Ganti dengan gambar background */
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+         body.dark-mode {
+            background: #1a1a1a;
+            color: #f5f5f7;
+        }
+
+        body.dark-mode .sidebar {
+            background: rgba(0, 0, 0, 0.3);
+            color: #f5f5f7;
+        }
+
+        body.dark-mode button {
+            background: #333; /* Dark blue for Dark Mode */
+            color: white;
+        }
+
+        body.dark-mode footer {
+            background: rgba(0, 0, 0, 0.5);
+            color: #f5f5f7;
+        }
+        
+        /* Sidebar dengan animasi */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 4px 0 40px rgba(0, 0, 0, 0.1);
+            padding: 100px 25px;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            transform: translateX(-100%);
+            opacity: 0;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+
+        .sidebar.active {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .sidebar a {
+            color: #111;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.2rem;
+            padding: 10px;
+            border-radius: 12px;
+            transition: background 0.3s ease, transform 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-family: inherit;
+            
+        }
+
+        .sidebar a:hover {
+            background: rgba(0, 0, 0, 0.05);
+            transform: translateX(10px);
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.25);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            z-index: 90;
+        }
+
+        .overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .hamburger {
+            position: fixed;
+            top: 25px;
+            left: 25px;
+            width: 55px;
+            height: 55px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border-radius: 18px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            z-index: 101;
+        }
+
+        .hamburger div {
+            width: 32px;
+            height: 4px;
+            background: #111;
+            margin: 5px 0;
+            border-radius: 2px;
+            transition: transform 0.3s ease, background 0.3s ease;
+        }
+        .hamburger.active div:nth-child(1) {
+            transform: translateY(9px) rotate(45deg);
+        }
+
+        .hamburger.active div:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger.active div:nth-child(3) {
+            transform: translateY(-9px) rotate(-45deg);
+        }
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            padding: 40px 20px 40px 20px;
+            text-align: center;
+            animation: fadeSlide 1s ease forwards;
+        }
+
+        @keyframes fadeSlide {
+            0% {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .main h1 {
+            font-size: 2.8rem;
+            color: #111;
+            margin-bottom: 20px;
+        }
+
+        .admin-options {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+            width: 100%;
+            margin-top: 40px;
+        }
+
+        .admin-options button {
+            padding: 20px 0;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            color: #fff;
+            font-weight: 700;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s, box-shadow 0.3s, background 0.3s;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        #freeAdminBtn {
+            background: linear-gradient(145deg, #007aff, #3399ff);
+        }
+
+        #vipAdminBtn {
+            background: linear-gradient(145deg, #ff9500, #ffb347);
+        }
+
+        .admin-options button:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 18px 35px rgba(0, 0, 0, 0.3);
+        }
+
+        footer {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(15px);
+            padding: 15px;
+            text-align: center;
+            color: #111;
+            border-top: 1px solid rgba(255, 255, 255, 0.25);
+            font-size: 0.95rem;
+        }
+
+        @media(max-width: 600px) {
+            .logo {
+                max-width: 120px;
+            }
+
+            .main h1 {
+                font-size: 2.2rem;
+            }
+
+            .admin-options button {
+                padding: 18px 45px;
+                font-size: 1.1rem;
+            }
+        }
+                .center-content {
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* Vertikal center */
+            align-items: center;     /* Horizontal center */
+            height: 40vh;           /* Full height untuk memastikan logo berada lebih dekat */
+            text-align: center;
+        }
+         .logo {
+            max-width: 200px;
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+        }
+
+        @media(max-width: 600px) {
+            .logo {
+                max-width: 120px;
+            }
+
+            .main h1 {
+                font-size: 2.2rem;
+            }
+
+            .buttons button {
+                padding: 18px 45px;
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="sidebar" id="sidebar">
+    <a href="dashboard.html"><span class="icon">🏡</span> Home</a>
+    <a href="buy.html">💵 Beli VIP</a>
+    <a href="user.html"><span class="icon">👥</span> User</a>
+    <a href="admin.html"><span class="icon">👤</span> Admin</a>
+    <a href="help.html"><span class="icon">❓</span> Help</a>
+    <a href="support.html"><span class="icon">💬</span> Support</a>
+</div>
+
+<div class="overlay" id="overlay"></div>
+
+<div class="hamburger" id="hamburger">
+    <div></div>
+    <div></div>
+    <div></div>
+</div>
+
+<div class="center-content">
+    <img src="logo.png" alt="foto Website" class="logo"> </div>
+
+<div class="main">
+    <h1>Welcome, Admin!</h1>
+    <p>Select your admin type to continue:</p>
+
+    <div class="admin-options">
+        <button id="freeAdminBtn" onclick="window.location.href='admin-free.html'">Free Admin</button>
+        <button id="vipAdminBtn" onclick="window.location.href='admin-vip.html'">VIP Admin</button>
+    </div>
+</div>
+
+<footer>
+    &copy; 2026 @nipo. All rights reserved.
+</footer>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const sidebar = document.getElementById('sidebar');
+        const hamburger = document.getElementById('hamburger');
+        const overlay = document.getElementById('overlay');
+
+        hamburger.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        });
+
+        if (performance.getEntriesByType("navigation")[0].type === "reload") {
+        sessionStorage.setItem('last_page', window.location.href);
+        window.location.href = 'loading.html';
+    }
+        overlay.addEventListener('click', () => {
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+        });
+    });
+document.addEventListener('contextmenu', e => e.preventDefault());
+document.onkeydown = function(e) {
+    if (e.ctrlKey && (e.keyCode === 85 || e.keyCode === 73)) return false; 
+    if (e.keyCode === 123) return false;
+};
+     
+</script>
+
+</body>
+</html>
