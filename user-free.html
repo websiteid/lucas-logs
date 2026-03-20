@@ -227,12 +227,15 @@ const JSON_URL = "https://raw.githubusercontent.com/websiteid/lucas-logs/main/da
     let lastDataHash = localStorage.getItem('user_home_db'); // Untuk deteksi perubahan otomatis
 
     async function loadPosts(){
-    try{
-        const res = await fetch(JSON_URL);
+    try {
+        // Menambahkan parameter ?t= agar URL selalu dianggap baru oleh browser
+        const cacheBuster = `?t=${new Date().getTime()}`; 
+        const res = await fetch(JSON_URL + cacheBuster);
+        
         const data = await res.json();
         posts = data.posts.reverse();
-        console.log("Posts loaded:", posts);
-    }catch(err){
+        console.log("Posts loaded from live source!");
+    } catch(err) {
         console.error("Failed load posts", err);
     }
 }
