@@ -221,18 +221,21 @@
 <footer>&copy; 2026 @nipo. All rights reserved.</footer>
 
 <script>
-    let posts = [];
-    const JSON_URL = "https://raw.githubusercontent.com/websiteid/lucas-logs/main/database-free.json";
+        let posts = [];
+const JSON_URL = "https://raw.githubusercontent.com/websiteid/lucas-logs/main/database-free.json";
     let currentCategory = null;
+    let lastDataHash = localStorage.getItem('user_home_db'); // Untuk deteksi perubahan otomatis
 
-    // Load Data
     async function loadPosts(){
-        try {
-            const res = await fetch(JSON_URL);
-            const data = await res.json();
-            posts = data.posts.reverse();
-        } catch(err) { console.error("Database error:", err); }
+    try{
+        const res = await fetch(JSON_URL);
+        const data = await res.json();
+        posts = data.posts.reverse();
+        console.log("Posts loaded:", posts);
+    }catch(err){
+        console.error("Failed load posts", err);
     }
+}
 
     // Filter Kategori (Fungsi 100% sama)
     function filterPosts(category) {
