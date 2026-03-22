@@ -63,27 +63,37 @@
 
         /* --- Toast Notification --- */
         #toast {
-            position: fixed;
-            top: 25px;
-            right: 25px;
-            padding: 16px 28px;
-            background: white;
-            color: var(--text-main);
-            border-radius: 16px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            z-index: 10001;
-            transform: translateX(150%);
-            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            border-left: 6px solid var(--primary);
-            font-weight: 700;
-        }
+    position: fixed;
+    top: 30px;
+    right: 30px;
+    min-width: 300px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px); /* Efek kaca */
+    padding: 20px;
+    border-radius: 20px;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.08);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    z-index: 99999;
+    transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    transform: translateX(120%); /* Sembunyi di kanan */
+}
 
-        #toast.show {
-            transform: translateX(0);
-        }
+#toast.show {
+    transform: translateX(0); /* Masuk ke layar */
+}
+
+/* Efek getar kalau error */
+#toast[style*="border-left: 6px solid rgb(239, 68, 68)"] {
+    animation: shake 0.4s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-10px); }
+    75% { transform: translateX(10px); }
+}
 
         /* --- Modal Logout --- */
         .modal-overlay {
@@ -619,12 +629,37 @@
 
         // --- UI HELPER ---
         function showToast(msg, type = 'success') {
-            const toast = document.getElementById('toast');
-            document.getElementById('toastMsg').innerText = msg;
-            toast.style.borderLeftColor = type === 'danger' ? 'var(--danger)' : 'var(--primary)';
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3000);
-        }
+    const toast = document.getElementById('toast');
+    const toastMsg = document.getElementById('toastMsg');
+    
+    // Konfigurasi Warna & Ikon
+    const config = {
+        success: { color: '#10b981', icon: 'check-circle' },
+        danger: { color: '#ef4444', icon: 'alert-circle' },
+        info: { color: '#3b82f6', icon: 'info' }
+    };
+
+    const selected = config[type] || config.success;
+
+    // Set Konten & Warna
+    toastMsg.innerText = msg;
+    toast.style.borderLeft = `6px solid ${selected.color}`;
+    
+    // Update Ikon (Mencari elemen i pertama di dalam toast)
+    const iconEl = toast.querySelector('i');
+    if (iconEl) {
+        iconEl.setAttribute('data-lucide', selected.icon);
+        lucide.createIcons(); // Re-render ikon baru
+    }
+
+    // Animasi Masuk
+    toast.classList.add('show');
+
+    // Otomatis Hilang setelah 3 detik
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 3000);
+}
 
         function setCat(c, el) {
             currentCat = c;
@@ -841,17 +876,26 @@
         }
 
         async function deletePost(id) {
-    if (confirm("Hapus postingan ini secara permanen dari Cloud?")) {
-        showToast("Menghapus...");
-        try {
-            await fetch(SCRIPT_URL, {
-                method: 'POST',
-                // Pastikan format body sama dengan savePost (pakai payload)
-                body: JSON.stringify({ action: 'deletePost', payload: { id: id } })
-            });
-            showToast("Berhasil dihapus", "danger");
-            await loadDatabase();
-        } catch (e) { showToast("Gagal menghapus", "danger"); }
+    // Gunakan konfirmasi yang lebih manis atau biarkan default browser
+    if (!confirm("⚠️ Data yang dihapus tidak bisa dikembalikan. Lanjutkan?")) return;
+
+    // Notifikasi Loading
+    showToast("Sedang menghapus data...", "info");
+
+    try {
+        const response = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'deletePost', payload: { id: id } })
+        });
+
+        if (response.ok) {
+            showToast("Postingan berhasil dilenyapkan!", "success");
+            await loadDatabase(); // Refresh tampilan
+        } else {
+            throw new Error();
+        }
+    } catch (e) {
+        showToast("Gagal menghapus! Cek koneksi internet.", "danger");
     }
 }
 
