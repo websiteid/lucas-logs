@@ -216,19 +216,37 @@
 <footer>&copy; 2026 @nipo. VIP Member Only.</footer>
 
 <script>
+// GANTI DENGAN URL WEB APP KAMU YANG DARI GOOGLE APPS SCRIPT
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw9P0UrBit2kDH1nHQrNWrA729IiloYxakjoCdnbamztvKkEGmJreMr8IMMY11M_RXn/exec"; 
+
 let posts = [];
-let tokens = {};
+let tokens = {}; // Sekarang kita ambil dari Google Sheets
 let currentCategory = null;
 let categoryName = "";
 
-// Load database-vip.json (Sesuai Struktur Kamu)
-fetch('database-vip.json')
-.then(res => res.json())
-.then(data => {
-    posts = data.posts || [];
-    tokens = data.tokens || {};
-})
-.catch(err => console.error("Database Error:", err));
+// LOAD DATABASE DARI GOOGLE SHEETS
+async function loadDatabase() {
+    try {
+        const response = await fetch(SCRIPT_URL);
+        const data = await response.json();
+        
+        // Simpan data postingan
+        posts = data.posts || [];
+        
+        // Ubah format tokens dari array [{class, token}] menjadi object {A: "123", B: "456"}
+        if (data.tokens) {
+            data.tokens.forEach(item => {
+                tokens[item.class.toUpperCase()] = item.token;
+            });
+        }
+        console.log("Database Synced:", { posts, tokens });
+    } catch (err) {
+        console.error("Gagal sinkronisasi Database:", err);
+    }
+}
+
+// Jalankan saat halaman dibuka
+loadDatabase();
 
 function requestAccess(cat, name){
     currentCategory = cat;
@@ -246,20 +264,24 @@ function requestAccess(cat, name){
 
 function verifyToken(){
     const inputVal = document.getElementById('tokenInput').value.trim();
-    const correctToken = tokens[currentCategory];
+    // Ambil token dari data Google Sheets
+    const correctToken = tokens[currentCategory.toUpperCase()];
 
-    if(!correctToken || inputVal !== correctToken){
+    if(!correctToken || inputVal !== correctToken.toString()){
         const err = document.getElementById('tokenError');
         err.style.display='block';
         gsap.fromTo(err,{x:-10},{x:10, repeat:3, yoyo:true, duration:0.05});
         return;
     }
     
-    // Jika benar, tampilkan daftar postingan
     gsap.to("#tokenGate",{duration:0.3, opacity:0, scale:0.8, display:'none', onComplete: ()=>{
         document.getElementById('controlsArea').style.display='flex';
         document.getElementById('dashboardTitle').textContent = categoryName;
-        renderPosts(posts.filter(p=>p.category.toUpperCase() === currentCategory.toUpperCase()));
+        
+        // Filter postingan berdasarkan kategori dari Sheet
+        const filtered = posts.filter(p => p.category && p.category.toUpperCase() === currentCategory.toUpperCase());
+        renderPosts(filtered);
+        
         gsap.fromTo("#controlsArea, #postList",{opacity:0, y:15},{opacity:1, y:0, duration:0.4});
     }});
 }
@@ -269,32 +291,37 @@ function renderPosts(array){
     list.innerHTML = array.length ? '' : '<div style="grid-column:1/-1; text-align:center; padding:80px; color:var(--text-dim)">Belum ada konten di kelas ini.</div>';
     
     array.forEach((post, index) => {
+        // Parsing links jika tersimpan sebagai string JSON di Sheet
+        let parsedLinks = [];
+        try {
+            parsedLinks = typeof post.links === 'string' ? JSON.parse(post.links) : post.links;
+        } catch(e) { parsedLinks = [post.links]; }
+
         const item = document.createElement('div');
         item.className='post-item fade-in';
         item.style.animationDelay = `${index*0.05}s`;
         item.innerHTML = `
-            <img src="${post.image || ''}" class="post-thumbnail">
+            <img src="${post.image || 'https://via.placeholder.com/300x200'}" class="post-thumbnail">
             <div class="post-info">
                 <span class="play-tag">VIP CONTENT</span>
                 <span class="post-title">${post.title}</span>
             </div>`;
-        item.onclick = () => openQP(post);
+        item.onclick = () => openQP(post, parsedLinks);
         list.appendChild(item);
     });
 }
 
-// FUNGSI QUICK PREVIEW GRID 5 KOLOM (IDENTIK DENGAN FREE)
-function openQP(post) {
+function openQP(post, links) {
     const qpGrid = document.getElementById('qpGrid');
     qpGrid.innerHTML = '';
     document.getElementById('qpTitle').textContent = post.title;
     
-    if (post.links && post.links.length > 0) {
-        post.links.forEach((link, index) => {
+    if (links && links.length > 0) {
+        links.forEach((link, index) => {
+            if(!link) return;
             const card = document.createElement('div');
             card.className = 'qp-card fade-in';
             card.style.animationDelay = `${index * 0.1}s`;
-            
             card.innerHTML = `
                 <div class="qp-video">
                     <iframe src="${link}" scrolling="no" allowfullscreen></iframe>
@@ -303,8 +330,7 @@ function openQP(post) {
                     <button class="btn-detail" onclick="window.open('${link}', '_blank')">
                         SERVER VIP ${index + 1}
                     </button>
-                </div>
-            `;
+                </div>`;
             qpGrid.appendChild(card);
         });
     }
@@ -316,7 +342,7 @@ function openQP(post) {
 function closeQP() { 
     gsap.to("#qpOverlay", {opacity: 0, duration: 0.3, onComplete: () => {
         document.getElementById('qpOverlay').style.display = 'none';
-        document.getElementById('qpGrid').innerHTML = ''; // Hentikan suara video
+        document.getElementById('qpGrid').innerHTML = ''; 
     }});
 }
 
@@ -333,13 +359,17 @@ function handleBackAction() {
             gsap.fromTo("#categoryBoxes, #subTitle",{opacity:0, y:20},{opacity:1, y:0, duration:0.4});
         }});
     } else {
-        window.location.href = 'user.html';
+        window.history.back();
     }
 }
 
 function searchPosts(){
     const val = document.getElementById('searchInput').value.toLowerCase();
-    renderPosts(posts.filter(p=>p.category.toUpperCase() === currentCategory.toUpperCase() && p.title.toLowerCase().includes(val)));
+    const filtered = posts.filter(p=> 
+        p.category && p.category.toUpperCase() === currentCategory.toUpperCase() && 
+        p.title.toLowerCase().includes(val)
+    );
+    renderPosts(filtered);
 }
 
 // Security
