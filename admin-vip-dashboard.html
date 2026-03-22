@@ -573,14 +573,13 @@
         </main>
     </div>
 
-    <script>
-        // ======= Database Keys =======
-        const DB_KEY = 'user_home7_db';
-        const TOKEN_KEY = 'vip_tokens_db';
-        const JSON_URL = "https://raw.githubusercontent.com/websiteid/lucas-logs/main/database-vip.json";
+<script>
+        // ======= DATABASE CONFIG =======
+        // Ganti URL di bawah dengan URL Web App yang kamu dapatkan dari Deploy Google Apps Script
+        const SCRIPT_URL = "URL_APPS_SCRIPT_KAMU_DISINI";
 
-        let posts = JSON.parse(localStorage.getItem(DB_KEY)) || [];
-        let tokens = JSON.parse(localStorage.getItem(TOKEN_KEY)) || { A: "", B: "", C: "", D: "", E: "", F: "" };
+        let posts = [];
+        let tokens = { A: "", B: "", C: "", D: "", E: "", F: "" };
         let currentCat = 'A';
         let isEditing = false;
         let base64Image = "";
@@ -590,23 +589,35 @@
                 window.location.href = 'admin-vip.html';
             } else {
                 document.body.style.display = 'block';
-                updateTokenUI();
-                await loadDatabase();
+                await loadDatabase(); // Ambil data dari Cloud
                 lucide.createIcons();
             }
         };
 
+        // --- LOAD DATA DARI CLOUD (GOOGLE SHEETS) ---
         async function loadDatabase() {
             try {
-                const res = await fetch(JSON_URL);
+                showToast("Memuat data dari cloud...", "info");
+                const res = await fetch(SCRIPT_URL);
                 const data = await res.json();
                 posts = data.posts || [];
+                
+                // Konversi array tokens dari Sheets ke object agar cocok dengan UI kamu
+                if (data.tokens) {
+                    data.tokens.forEach(t => {
+                        tokens[t.class] = t.token;
+                    });
+                }
+                
+                updateTokenUI();
                 render();
             } catch (err) {
-                console.error("Gagal load database", err);
+                console.error(err);
+                showToast("Gagal terhubung ke database cloud", "danger");
             }
         }
 
+        // --- UI HELPER ---
         function showToast(msg, type = 'success') {
             const toast = document.getElementById('toast');
             document.getElementById('toastMsg').innerText = msg;
@@ -638,32 +649,53 @@
             document.getElementById('activeTokenDisplay').innerText = currentToken ? currentToken : "BELUM DISET";
         }
 
-        function saveToken() {
+        // --- CLOUD ACTIONS (POST, DELETE, TOKEN) ---
+        async function saveToken() {
             const newVal = document.getElementById('classTokenInput').value.trim();
-            tokens[currentCat] = newVal;
-            localStorage.setItem(TOKEN_KEY, JSON.stringify(tokens));
-            showToast(`Token Kelas ${currentCat} disimpan!`);
-            updateTokenUI();
+            showToast("Menyimpan token...");
+            try {
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ 
+                        action: 'saveToken', 
+                        payload: { class: currentCat, token: newVal } 
+                    })
+                });
+                tokens[currentCat] = newVal;
+                showToast(`Token Kelas ${currentCat} tersimpan di Cloud!`);
+                updateTokenUI();
+            } catch (e) { showToast("Gagal simpan token", "danger"); }
         }
 
-        function resetToken() {
+        async function resetToken() {
             if (confirm(`Reset token untuk Kelas ${currentCat}?`)) {
-                tokens[currentCat] = "";
-                localStorage.setItem(TOKEN_KEY, JSON.stringify(tokens));
-                updateTokenUI();
-                showToast("Token berhasil direset", "danger");
+                document.getElementById('classTokenInput').value = "";
+                await saveToken();
             }
         }
 
+        // Preview & Auto-Compress Image (Penting untuk Sheets)
         function previewFile(input) {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    base64Image = e.target.result;
-                    const img = document.getElementById('previewImg');
-                    img.src = e.target.result;
-                    img.style.display = 'block';
-                    document.getElementById('uploadHint').style.opacity = '0';
+                    const imgObj = new Image();
+                    imgObj.src = e.target.result;
+                    imgObj.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        const maxWidth = 500; // Ukuran optimal untuk Sheets
+                        const scale = maxWidth / imgObj.width;
+                        canvas.width = maxWidth;
+                        canvas.height = imgObj.height * scale;
+                        ctx.drawImage(imgObj, 0, 0, canvas.width, canvas.height);
+                        
+                        base64Image = canvas.toDataURL('image/jpeg', 0.7);
+                        const preview = document.getElementById('previewImg');
+                        preview.src = base64Image;
+                        preview.style.display = 'block';
+                        document.getElementById('uploadHint').style.opacity = '0';
+                    };
                 };
                 reader.readAsDataURL(input.files[0]);
             }
@@ -679,30 +711,34 @@
             document.getElementById('linkInputs').appendChild(div);
         }
 
-        // ===== Form Submit =====
-        document.getElementById('postForm').onsubmit = (e) => {
+        // --- FORM SUBMIT KE CLOUD ---
+        document.getElementById('postForm').onsubmit = async (e) => {
             e.preventDefault();
             const links = Array.from(document.querySelectorAll('.link-field')).map(i => i.value.trim()).filter(v => v);
+            
             const data = {
                 id: isEditing ? parseInt(document.getElementById('editId').value) : Date.now(),
                 title: document.getElementById('title').value.trim(),
                 category: document.getElementById('category').value,
                 image: base64Image,
-                links: links,
+                links: JSON.stringify(links), // Sheets lebih aman terima string
                 desc: document.getElementById('desc').value.trim()
             };
 
-            if (isEditing) {
-                posts = posts.map(p => p.id === data.id ? data : p);
-                showToast("Postingan diperbarui!");
-            } else {
-                posts.unshift(data);
-                showToast("Berhasil dipublikasikan!");
+            showToast("Mensinkronisasi ke Cloud...");
+            
+            try {
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'savePost', payload: data })
+                });
+                
+                showToast(isEditing ? "Postingan diperbarui!" : "Berhasil dipublikasikan!");
+                resetForm();
+                await loadDatabase(); // Refresh data terbaru
+            } catch (err) {
+                showToast("Gagal kirim data", "danger");
             }
-
-            localStorage.setItem(DB_KEY, JSON.stringify(posts));
-            resetForm();
-            render();
         };
 
         function resetForm() {
@@ -720,8 +756,13 @@
             const display = document.getElementById('postDisplay');
             display.innerHTML = "";
             const filtered = posts.filter(p => p.category === currentCat && p.title.toLowerCase().includes(query.toLowerCase()));
+            
             filtered.forEach(p => {
                 const img = p.image || 'https://via.placeholder.com/320x180?text=No+Image';
+                // Handle links jika datang sebagai string dari Sheets
+                let linkArray = [];
+                try { linkArray = typeof p.links === 'string' ? JSON.parse(p.links) : p.links; } catch(e) { linkArray = []; }
+
                 const card = `
                     <div class="post-card">
                         <img src="${img}" class="card-thumb" alt="thumbnail">
@@ -729,7 +770,7 @@
                             <span style="color:var(--primary); font-size:0.7rem; font-weight:800;">CLASS ${p.category}</span>
                             <h3>${p.title}</h3>
                             <div style="flex-grow:1">
-                                ${p.links.map((l, i) => `<span class="link-badge">Link ${i + 1}</span>`).join('')}
+                                ${linkArray.map((l, i) => `<span class="link-badge">Link ${i + 1}</span>`).join('')}
                             </div>
                             <div style="margin-top:20px; display:flex; gap:15px; border-top:1px solid var(--border); padding-top:15px">
                                 <button onclick="editPost(${p.id})" style="border:none; background:none; color:var(--primary); cursor:pointer; font-weight:700; display:flex; align-items:center; gap:5px">
@@ -748,7 +789,7 @@
         }
 
         function editPost(id) {
-            const p = posts.find(x => x.id === id);
+            const p = posts.find(x => x.id == id);
             if (!p) return;
             document.getElementById('title').value = p.title;
             document.getElementById('category').value = p.category;
@@ -757,7 +798,10 @@
 
             const linkIn = document.getElementById('linkInputs');
             linkIn.innerHTML = "";
-            p.links.forEach((l, i) => {
+            let linkArray = [];
+            try { linkArray = typeof p.links === 'string' ? JSON.parse(p.links) : p.links; } catch(e) { linkArray = []; }
+
+            linkArray.forEach((l, i) => {
                 if (i === 0) linkIn.innerHTML = `<input type="url" class="link-field" value="${l}" required>`;
                 else addLinkField(l);
             });
@@ -776,12 +820,17 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        function deletePost(id) {
-            if (confirm("Hapus postingan ini secara permanen?")) {
-                posts = posts.filter(p => p.id !== id);
-                localStorage.setItem(DB_KEY, JSON.stringify(posts));
-                showToast("Berhasil dihapus", "danger");
-                render();
+        async function deletePost(id) {
+            if (confirm("Hapus postingan ini secara permanen dari Cloud?")) {
+                showToast("Menghapus...");
+                try {
+                    await fetch(SCRIPT_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({ action: 'deletePost', id: id })
+                    });
+                    showToast("Berhasil dihapus", "danger");
+                    await loadDatabase();
+                } catch (e) { showToast("Gagal menghapus", "danger"); }
             }
         }
 
@@ -793,10 +842,6 @@
         }
 
         document.getElementById('searchInput').oninput = (e) => render(e.target.value);
-        document.addEventListener('contextmenu', e => e.preventDefault());
-        document.onkeydown = function (e) {
-            if (e.keyCode === 123 || (e.ctrlKey && (e.keyCode === 85 || e.keyCode === 73))) return false;
-        };
     </script>
 </body>
 
