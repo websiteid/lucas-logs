@@ -576,7 +576,7 @@
 <script>
         // ======= DATABASE CONFIG =======
         // Ganti URL di bawah dengan URL Web App yang kamu dapatkan dari Deploy Google Apps Script
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwDo1KQY4gHNBm5483LbsK2pgyRZYpiOVz7SHU5qg0_2dAh0a-MAg5FrmmNF3Wvwvbw/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbySYHKf7XyxggNlGOrwMMxxlYEKvys9ZICiP3uxzWQ-crxNmbbojfLkGmO2GeV3Ohtk/exec";
 
         let posts = [];
         let tokens = { A: "", B: "", C: "", D: "", E: "", F: "" };
@@ -753,40 +753,60 @@
         }
 
         function render(query = "") {
-            const display = document.getElementById('postDisplay');
-            display.innerHTML = "";
-            const filtered = posts.filter(p => p.category === currentCat && p.title.toLowerCase().includes(query.toLowerCase()));
-            
-            filtered.forEach(p => {
-                const img = p.image || 'https://via.placeholder.com/320x180?text=No+Image';
-                // Handle links jika datang sebagai string dari Sheets
-                let linkArray = [];
-                try { linkArray = typeof p.links === 'string' ? JSON.parse(p.links) : p.links; } catch(e) { linkArray = []; }
+    const display = document.getElementById('postDisplay');
+    display.innerHTML = "";
+    
+    // Pastikan posts adalah array
+    if (!Array.isArray(posts)) return;
 
-                const card = `
-                    <div class="post-card">
-                        <img src="${img}" class="card-thumb" alt="thumbnail">
-                        <div class="card-body">
-                            <span style="color:var(--primary); font-size:0.7rem; font-weight:800;">CLASS ${p.category}</span>
-                            <h3>${p.title}</h3>
-                            <div style="flex-grow:1">
-                                ${linkArray.map((l, i) => `<span class="link-badge">Link ${i + 1}</span>`).join('')}
-                            </div>
-                            <div style="margin-top:20px; display:flex; gap:15px; border-top:1px solid var(--border); padding-top:15px">
-                                <button onclick="editPost(${p.id})" style="border:none; background:none; color:var(--primary); cursor:pointer; font-weight:700; display:flex; align-items:center; gap:5px">
-                                    <i data-lucide="edit-3" size="14"></i> Edit
-                                </button>
-                                <button onclick="deletePost(${p.id})" style="border:none; background:none; color:var(--danger); cursor:pointer; font-weight:700; display:flex; align-items:center; gap:5px">
-                                    <i data-lucide="trash-2" size="14"></i> Hapus
-                                </button>
-                            </div>
-                        </div>
-                    </div>`;
-                display.insertAdjacentHTML('beforeend', card);
-            });
-            document.getElementById('totalPost').innerText = posts.length;
-            lucide.createIcons();
+    const filtered = posts.filter(p => {
+        // Samakan tipe data category (biar string vs string)
+        const catMatch = String(p.category) === String(currentCat);
+        const titleMatch = p.title.toLowerCase().includes(query.toLowerCase());
+        return catMatch && titleMatch;
+    });
+    
+    filtered.forEach(p => {
+        const img = p.image || 'https://via.placeholder.com/320x180?text=No+Image';
+        
+        // Proteksi Link Array
+        let linkArray = [];
+        try { 
+            if (typeof p.links === 'string') {
+                linkArray = JSON.parse(p.links);
+            } else if (Array.isArray(p.links)) {
+                linkArray = p.links;
+            }
+        } catch(e) { 
+            console.error("Error parsing links for ID:", p.id);
+            linkArray = []; 
         }
+
+        const card = `
+            <div class="post-card">
+                <img src="${img}" class="card-thumb" alt="thumbnail">
+                <div class="card-body">
+                    <span style="color:var(--primary); font-size:0.7rem; font-weight:800;">CLASS ${p.category}</span>
+                    <h3>${p.title}</h3>
+                    <div style="flex-grow:1">
+                        ${linkArray.map((l, i) => `<span class="link-badge">Link ${i + 1}</span>`).join('')}
+                    </div>
+                    <div style="margin-top:20px; display:flex; gap:15px; border-top:1px solid var(--border); padding-top:15px">
+                        <button onclick="editPost('${p.id}')" style="border:none; background:none; color:var(--primary); cursor:pointer; font-weight:700; display:flex; align-items:center; gap:5px">
+                            <i data-lucide="edit-3" size="14"></i> Edit
+                        </button>
+                        <button onclick="deletePost('${p.id}')" style="border:none; background:none; color:var(--danger); cursor:pointer; font-weight:700; display:flex; align-items:center; gap:5px">
+                            <i data-lucide="trash-2" size="14"></i> Hapus
+                        </button>
+                    </div>
+                </div>
+            </div>`;
+        display.insertAdjacentHTML('beforeend', card);
+    });
+    
+    document.getElementById('totalPost').innerText = filtered.length; // Menghitung yang muncul saja
+    lucide.createIcons();
+}
 
         function editPost(id) {
             const p = posts.find(x => x.id == id);
@@ -821,18 +841,19 @@
         }
 
         async function deletePost(id) {
-            if (confirm("Hapus postingan ini secara permanen dari Cloud?")) {
-                showToast("Menghapus...");
-                try {
-                    await fetch(SCRIPT_URL, {
-                        method: 'POST',
-                        body: JSON.stringify({ action: 'deletePost', id: id })
-                    });
-                    showToast("Berhasil dihapus", "danger");
-                    await loadDatabase();
-                } catch (e) { showToast("Gagal menghapus", "danger"); }
-            }
-        }
+    if (confirm("Hapus postingan ini secara permanen dari Cloud?")) {
+        showToast("Menghapus...");
+        try {
+            await fetch(SCRIPT_URL, {
+                method: 'POST',
+                // Pastikan format body sama dengan savePost (pakai payload)
+                body: JSON.stringify({ action: 'deletePost', payload: { id: id } })
+            });
+            showToast("Berhasil dihapus", "danger");
+            await loadDatabase();
+        } catch (e) { showToast("Gagal menghapus", "danger"); }
+    }
+}
 
         function openLogoutModal() { document.getElementById('logoutModal').style.display = 'flex'; }
         function closeLogoutModal() { document.getElementById('logoutModal').style.display = 'none'; }
