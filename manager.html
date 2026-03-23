@@ -6,116 +6,24 @@
     <title>Pro Manager | Google Sheets Hub</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        :root { 
-            --primary: #6366f1; 
-            --bg: #020617; 
-            --card: rgba(30, 41, 59, 0.7); 
-            --accent: #818cf8;
-        }
-        
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background: var(--bg); 
-            color: white; 
-            padding: 40px 20px; 
-            display: flex; 
-            justify-content: center; 
-            margin: 0;
-        }
-
+        :root { --primary: #6366f1; --bg: #020617; --card: rgba(30, 41, 59, 0.7); }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: white; padding: 40px 20px; display: flex; justify-content: center; margin: 0; }
         .wrapper { width: 100%; max-width: 900px; }
-        
-        .header-flex {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-        }
-
-        h2 { 
-            font-size: 1.8rem; 
-            margin: 0;
-            background: linear-gradient(to right, #818cf8, #c084fc); 
-            -webkit-background-clip: text; 
-            -webkit-text-fill-color: transparent; 
-        }
-
-        .status-badge {
-            font-size: 0.8rem;
-            padding: 5px 12px;
-            border-radius: 20px;
-            background: rgba(255,255,255,0.1);
-            color: #94a3b8;
-        }
-
-        .card { 
-            background: var(--card); 
-            backdrop-filter: blur(12px); 
-            border: 1px solid rgba(255,255,255,0.1); 
-            padding: 20px; 
-            border-radius: 20px; 
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); 
-            overflow-x: auto;
-        }
-
+        .header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+        h2 { font-size: 1.8rem; margin: 0; background: linear-gradient(to right, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .status-badge { font-size: 0.8rem; padding: 5px 12px; border-radius: 20px; background: rgba(255,255,255,0.1); color: #94a3b8; }
+        .card { background: var(--card); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); padding: 20px; border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); overflow-x: auto; }
         table { width: 100%; border-collapse: separate; border-spacing: 0 10px; min-width: 600px; }
         th { color: #94a3b8; font-weight: 600; text-align: left; padding: 10px 15px; }
         td { padding: 15px; background: rgba(255,255,255,0.03); vertical-align: middle; }
         td:first-child { border-radius: 12px 0 0 12px; font-weight: 600; width: 25%; }
-        td:nth-child(2) { color: #cbd5e1; font-size: 0.9rem; word-break: break-all; }
         td:last-child { border-radius: 0 12px 12px 0; text-align: center; width: 150px; }
-
-        input { 
-            background: #0f172a; 
-            border: 1px solid #475569; 
-            color: #f8fafc; 
-            padding: 10px 12px; 
-            border-radius: 8px; 
-            width: 100%; 
-            box-sizing: border-box;
-            outline: none;
-        }
-        
-        input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2); }
-
-        .btn { 
-            cursor: pointer; 
-            padding: 8px 16px; 
-            border-radius: 8px; 
-            border: none; 
-            font-weight: 600; 
-            transition: 0.3s; 
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            white-space: nowrap;
-        }
-
+        input { background: #0f172a; border: 1px solid #475569; color: #f8fafc; padding: 10px 12px; border-radius: 8px; width: 100%; box-sizing: border-box; outline: none; }
+        .btn { cursor: pointer; padding: 8px 16px; border-radius: 8px; border: none; font-weight: 600; transition: 0.3s; display: inline-flex; align-items: center; gap: 8px; }
         .btn-edit { background: #334155; color: white; }
-        .btn-edit:hover { background: #475569; }
-        
         .btn-save { background: var(--primary); color: white; }
-        .btn-save:hover { background: #4f46e5; }
-        .btn-save:disabled { background: #64748b; cursor: not-allowed; }
-
-        .loading-overlay {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(2, 6, 23, 0.8);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-        }
-
-        .spinner {
-            width: 40px; height: 40px;
-            border: 4px solid rgba(255,255,255,0.1);
-            border-left-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
+        .loading-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(2, 6, 23, 0.8); display: none; justify-content: center; align-items: center; z-index: 100; }
+        .spinner { width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.1); border-left-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
@@ -126,7 +34,7 @@
 <div class="wrapper">
     <div class="header-flex">
         <h2>🚀 Link Manager Pro</h2>
-        <div id="syncStatus" class="status-badge">Menghubungkan ke Cloud...</div>
+        <div id="syncStatus" class="status-badge">Menghubungkan...</div>
     </div>
 
     <div class="card">
@@ -146,7 +54,7 @@
 </div>
 
 <script>
-    // MASUKKAN URL WEB APP GOOGLE SCRIPT ANDA DI SINI
+    // MASUKKAN URL ANDA DI SINI
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby-Bi0L0a2y-hhEdA-pNa4Wiv1XNyokHBvRrsodKjsdvVix97QDnf0Db3e7vWPuEeWezg/exec"; 
 
     const produkList = ["VIP LOKAL", "VIP ASIA", "VIP CINA", "VIP AMERIKA", "VIP VGK", "PAKET LENGKAP"];
@@ -161,9 +69,10 @@
             document.getElementById('syncStatus').style.color = "#4ade80";
             renderTable();
         } catch (err) {
-            console.error("Gagal load database:", err);
+            console.error(err);
             document.getElementById('syncStatus').innerText = "❌ Connection Error";
             document.getElementById('syncStatus').style.color = "#f87171";
+            document.getElementById('tableBody').innerHTML = `<tr><td colspan="3" style="text-align: center;">Gagal memuat data. Periksa URL Apps Script Anda.</td></tr>`;
         } finally {
             showLoader(false);
         }
@@ -172,7 +81,6 @@
     function renderTable() {
         const tbody = document.getElementById('tableBody');
         tbody.innerHTML = '';
-        
         produkList.forEach(p => {
             const link = database[p] || "";
             let displayContent = p === "PAKET LENGKAP" 
@@ -193,11 +101,7 @@
     function edit(p) {
         const cell = document.getElementById('cell_' + p);
         const btnCell = document.getElementById('btn_cell_' + p);
-        const current = database[p] || "";
-        
-        const placeholder = p === "PAKET LENGKAP" ? "link1,link2,link3..." : "https://...";
-        cell.innerHTML = `<input type="text" id="inp_${p}" value="${current}" placeholder="${placeholder}">`;
-        
+        cell.innerHTML = `<input type="text" id="inp_${p}" value="${database[p] || ''}" placeholder="https://...">`;
         btnCell.innerHTML = `<button class="btn btn-save" onclick="save('${p}')" id="save_${p}">💾 Simpan</button>`;
     }
 
@@ -205,16 +109,13 @@
         const btn = document.getElementById('save_' + p);
         const input = document.getElementById('inp_' + p);
         let val = input.value.trim();
-        
         if (p === "PAKET LENGKAP") val = val.replace(/\s/g,'');
 
         btn.innerText = "Saving...";
         btn.disabled = true;
-        input.disabled = true;
 
         try {
-            // Gunakan mode no-cors jika mengalami isu CORS, tapi POST JSON butuh server handling
-            // Script Google Apps Script secara default mendukung ini
+            // POST ke Google Apps Script
             await fetch(SCRIPT_URL, {
                 method: "POST",
                 body: JSON.stringify({ produk: p, link: val })
@@ -222,10 +123,8 @@
             
             database[p] = val;
             renderTable();
-            console.log(`Updated ${p} to: ${val}`);
         } catch (err) {
-            alert("Gagal menyimpan ke Google Sheets!");
-            console.error(err);
+            alert("Gagal menyimpan!");
             renderTable();
         }
     }
@@ -234,12 +133,8 @@
         document.getElementById('loader').style.display = show ? 'flex' : 'none';
     }
 
-    // Jalankan saat startup
-    if (SCRIPT_URL === "https://script.google.com/macros/s/AKfycby-Bi0L0a2y-hhEdA-pNa4Wiv1XNyokHBvRrsodKjsdvVix97QDnf0Db3e7vWPuEeWezg/exec") {
-        document.getElementById('tableBody').innerHTML = `<tr><td colspan="3" style="text-align: center; color: #f87171;">Harap masukkan SCRIPT_URL di dalam kode HTML!</td></tr>`;
-    } else {
-        loadDatabase();
-    }
+    // Eksekusi langsung
+    loadDatabase();
 </script>
 </body>
 </html>
