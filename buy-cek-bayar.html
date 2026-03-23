@@ -69,19 +69,29 @@ h2, .nominal, #timer { animation: slideUp 0.6s ease-out; }
 </div>
 
 <script>
-// Ambil data dari JSON
+// 1. Masukkan URL Web App Google Script Anda di sini
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby-Bi0L0a2y-hhEdA-pNa4Wiv1XNyokHBvRrsodKjsdvVix97QDnf0Db3e7vWPuEeWezg/exec"; 
+
 let database = {};
+
 async function loadDatabase() {
     try {
-        const res = await fetch('database-manager.json');
+        // 2. Ambil data dari Google Sheets (bukan file JSON)
+        const res = await fetch(SCRIPT_URL);
         database = await res.json();
 
         const params = new URLSearchParams(window.location.search);
         const produk = params.get('produk') || "Produk";
         const harga = params.get('harga') || "0";
 
-        // Ambil link dari database
-        let linkAkses = database[produk] || Object.keys(database).find(k => k.includes("PAKET")) && database[Object.keys(database).find(k => k.includes("PAKET"))] || "Link belum diatur";
+        // 3. Cari link berdasarkan nama produk di Google Sheets
+        let linkAkses = database[produk];
+
+        // Logika tambahan: Jika produk tidak ditemukan, coba cari yang mengandung kata "PAKET"
+        if (!linkAkses) {
+            const kunciPaket = Object.keys(database).find(k => k.toUpperCase().includes("PAKET"));
+            linkAkses = database[kunciPaket] || "Link belum diatur di Google Sheets";
+        }
 
         document.getElementById('displayProduk').innerText = produk;
         document.getElementById('displayHarga').innerText = "Rp " + harga;
@@ -89,8 +99,8 @@ async function loadDatabase() {
 
         startTimer();
     } catch(err) {
-        console.error("Gagal load database", err);
-        alert("Gagal mengambil data produk.");
+        console.error("Gagal load database dari Google Sheets", err);
+        alert("Gagal mengambil data produk. Pastikan URL Script benar.");
     }
 }
 
