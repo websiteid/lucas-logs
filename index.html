@@ -3,97 +3,231 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Loading</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600&display=swap" rel="stylesheet">
+    <title>Luca's ID</title>
+    
+    <!-- Link Favicon (Logo Tab Browser) -->
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/10757/10757289.png">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --glass: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --blur: 25px;
+        }
 
         body {
-            height: 100vh;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: #ffffff;
+            margin: 0;
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 2rem 1rem;
+            overflow-x: hidden;
+            transition: background 1.2s ease-in-out;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* State saat konten sudah muncul - Background berubah dari putih ke gambar */
+        body.loaded {
+            background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('1.jpg') no-repeat center center fixed;
+            background-size: cover;
+        }
+
+        /* Loader Putih Bersih */
+        #loader {
+            position: fixed;
+            inset: 0;
+            background: #ffffff;
             display: flex;
             justify-content: center;
             align-items: center;
-            background: #f5f5f7;
-            font-family: 'Inter', sans-serif;
-            overflow: hidden;
+            z-index: 100;
+            transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
+        .loader-icon {
+            width: 60px;
+            height: 60px;
+        }
+
+        /* Animasi Kartu Muncul */
         .glass-card {
-            position: relative;
-            padding: 40px;
-            width: 300px;
-            text-align: center;
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 24px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.04);
-            animation: entrance 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
-        }
-
-        .loading-text {
-            font-size: 13px;
-            font-weight: 600;
-            color: #1d1d1f;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            margin-bottom: 16px;
-            display: block;
-        }
-
-        .progress-container {
+            background: var(--glass);
+            backdrop-filter: blur(var(--blur));
+            -webkit-backdrop-filter: blur(var(--blur));
+            border: 1px solid var(--glass-border);
+            border-radius: 35px;
+            box-shadow: 0 15px 35px 0 rgba(0, 0, 0, 0.3);
             width: 100%;
-            height: 6px;
-            background: #e5e5ea;
-            border-radius: 10px;
-            overflow: hidden;
-            position: relative;
+            max-width: 450px;
+            margin-top: 2rem;
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 1s cubic-bezier(0.22, 1, 0.36, 1);
         }
 
-        .progress-bar {
-            width: 0%;
-            height: 100%;
-            background: linear-gradient(90deg, #007AFF, #5856D6);
-            border-radius: 10px;
-            animation: loadProgress 1s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+        .loaded .glass-card {
+            opacity: 1;
+            transform: translateY(0);
         }
 
-        @keyframes loadProgress {
-            to { width: 100%; }
+        /* Navigasi & Hover */
+        .nav-button-inner {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+            padding: 16px 20px;
+            border-radius: 22px;
+            margin-bottom: 12px;
+            text-decoration: none;
+            color: white;
         }
 
-        @keyframes entrance {
-            from { opacity: 0; transform: scale(0.95) translateY(10px); }
-            to { opacity: 1; transform: scale(1) translateY(0); }
+        .nav-button-inner:hover {
+            background: rgba(255, 255, 255, 0.18);
+            transform: scale(1.03);
+            border-color: rgba(255, 255, 255, 0.4);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
         }
 
-        @keyframes fadeExit {
-            to { opacity: 0; transform: scale(1.05); filter: blur(15px); }
+        .nav-button-inner img {
+            width: 24px;
+            height: 24px;
+            margin-right: 15px;
         }
 
-        .fade-out {
-            animation: fadeExit 0.5s ease-in forwards;
+        .nav-button-inner span {
+            font-size: 15px;
+            font-weight: 600;
         }
+
+        /* Animasi Nafas (Breathing) */
+        @keyframes breathe {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(255,255,255,0.2)); }
+            50% { transform: scale(1.1); filter: drop-shadow(0 0 20px rgba(255,255,255,0.4)); }
+        }
+
+        .breathing { animation: breathe 4s ease-in-out infinite; }
+
+        /* Transisi Konten Utama */
+        .main-content {
+            opacity: 0;
+            transition: opacity 1.2s ease;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .loaded .main-content { opacity: 1; }
+
+        .profile-img {
+            width: 100px;
+            height: 100px;
+            border-radius: 30px; 
+            object-fit: cover;
+            border: 2px solid rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.1);
+            padding: 4px;
+        }
+
+        .title-text {
+            background: linear-gradient(180deg, #FFFFFF 0%, rgba(255, 255, 255, 0.7) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        body::-webkit-scrollbar { display: none; }
+        body { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body>
 
-<div class="glass-card" id="loadingScreen">
-    <span class="loading-text">Loading</span>
-    <div class="progress-container">
-        <div class="progress-bar"></div>
+    <!-- Loader Putih Tetap Ada -->
+    <div id="loader">
+        <img src="https://cdn-icons-png.flaticon.com/512/17905/17905746.png" alt="Loading" class="loader-icon animate-spin">
     </div>
-</div>
 
-<script>
-    setTimeout(() => {
-        const screen = document.getElementById("loadingScreen");
-        screen.classList.add("fade-out");
-        setTimeout(() => {
-            window.location.href = "dashboard.html";
-        }, 500);
-    }, 1000);
-</script>
+    <div class="main-content">
+        <!-- Header -->
+        <header class="text-center mt-8">
+            <img src="https://cdn-icons-png.flaticon.com/512/10757/10757289.png" alt="Logo" class="profile-img breathing mx-auto mb-4">
+            <h1 class="text-4xl font-extrabold tracking-tight title-text">Luca's ID</h1>
+            <p class="text-white/50 text-[10px] mt-1 uppercase tracking-[0.5em] font-bold">by @nopek</p>
+        </header>
 
+        <!-- Menu Card -->
+        <div class="glass-card p-8 md:p-10 mt-8">
+            <div class="text-center mb-10">
+                <p class="text-white/70 text-sm leading-relaxed font-medium italic">
+                    "AI 0.0.01" 
+                </p>
+            </div>
+
+            <nav class="flex flex-col">
+                <a href="event.html" class="nav-button-inner">
+                    <img src="https://cdn-icons-png.flaticon.com/512/2413/2413035.png" alt="Event">
+                    <span>Exclusive Event</span>
+                </a>
+                
+                <a href="buy.html" class="nav-button-inner">
+                    <img src="https://cdn-icons-png.flaticon.com/512/3737/3737372.png" alt="Buy">
+                    <span>Marketplace / Shop</span>
+                </a>
+                
+                <a href="help.html" class="nav-button-inner">
+                    <img src="https://cdn-icons-png.flaticon.com/512/1660/1660114.png" alt="Help">
+                    <span>Pusat Bantuan</span>
+                </a>
+                
+                <a href="link.html" class="nav-button-inner">
+                    <img src="https://cdn-icons-png.flaticon.com/512/455/455691.png" alt="Link">
+                    <span>Tautan Sosial</span>
+                </a>
+            </nav>
+        </div>
+
+        <footer class="mt-20 mb-8 text-center">
+            <div class="h-[1px] w-10 bg-white/20 mx-auto mb-4"></div>
+            <p class="text-white/30 text-[9px] uppercase tracking-[0.6em]">Luca's ID &bull; MMXXIV</p>
+        </footer>
+    </div>
+
+    <script>
+        // Animasi Loading & Transisi Background
+        window.addEventListener('load', () => {
+            const loader = document.getElementById('loader');
+            setTimeout(() => {
+                loader.style.opacity = '0';
+                document.body.classList.add('loaded'); // Memicu perubahan background & munculnya kartu
+                setTimeout(() => {
+                    loader.style.display = 'none';
+                }, 800);
+            }, 1000); // Tahan loading selama 1 detik agar transisi mulus
+        });
+
+        // Fitur Keamanan
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        document.addEventListener('keydown', e => {
+            if (
+                e.ctrlKey && (e.keyCode === 67 || e.keyCode === 86 || e.keyCode === 85 || e.keyCode === 83 || (e.shiftKey && e.keyCode === 73)) ||
+                e.keyCode === 123
+            ) {
+                e.preventDefault();
+            }
+        });
+        document.addEventListener('dragstart', e => e.preventDefault());
+    </script>
 </body>
 </html>
